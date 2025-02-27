@@ -10,6 +10,7 @@ export const Background = styled.div`
   background-repeat: no-repeat;
   position: relative;
   display: flex;
+  justify-content: center;
 `;
 
 export const Head = styled.div``;
