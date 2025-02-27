@@ -9,7 +9,8 @@ class WholeMazeScene extends Phaser.Scene {
   private exitTile!: Phaser.GameObjects.Rectangle;
   private isExiting: boolean = false;
   private bg!: Phaser.GameObjects.Image;
-  private npcs!: Phaser.Physics.Arcade.StaticGroup;
+  private npcs!: Phaser.Physics.Arcade.Group;
+  private isInteractingWithNPC: boolean = false;
 
   constructor() {
     super({ key: 'WholeMazeScene', physics: { default: 'arcade', arcade: { debug: false } } });
@@ -25,7 +26,6 @@ class WholeMazeScene extends Phaser.Scene {
     this.load.image('floor', '/assets/images/tile_0001.png'); // ✅ 바닥 타일
     this.load.image('player', '/assets/images/player_walk1.png');
     this.load.image('npc', '/assets/images/npc.png');
-    console.log(this.textures.list);
   }
 
   create() {
@@ -53,7 +53,11 @@ class WholeMazeScene extends Phaser.Scene {
 
     // ✅ 물리 충돌을 위한 벽 그룹 생성
     this.walls = this.physics.add.staticGroup();
-    this.npcs = this.physics.add.staticGroup();
+    this.npcs = this.physics.add.group({
+      immovable: true, // ✅ NPC가 움직이지 않도록 설정
+      allowGravity: false, // ✅ 중력 영향 제거
+    });
+
     let exitX = 0,
       exitY = 0;
 
@@ -74,13 +78,24 @@ class WholeMazeScene extends Phaser.Scene {
           exitY = y;
           this.add.image(x, y, 'floor').setOrigin(0);
         } else if (tileType === 3) {
-          // ✅ NPC 추가
-          const npc = this.npcs
-            .create(x + tileSize / 2, y + tileSize / 2, 'npc')
+          // 먼저 바닥 타일 추가
+          this.add.image(x, y, 'floor').setOrigin(0);
+
+          // ✅ NPC 물리 객체 생성
+          const npc = this.physics.add
+            .sprite(x + tileSize / 2, y + tileSize / 2, 'npc')
             .setOrigin(0.5)
-            .setDisplaySize(tileSize, tileSize)
+            .setDisplaySize(tileSize * 0.8, tileSize * 0.8) // NPC 크기 조정
             .setDepth(1);
-          npc.body.immovable = true;
+
+          npc.body.setSize(tileSize, tileSize); // 타일 크기만큼 충돌 박스를 크게
+          npc.body.setOffset(0, 0); // 충돌 박스가 중앙에 오도록 조정
+          npc.body.immovable = true; // NPC가 움직이지 않도록 설정
+          npc.refreshBody(); // 물리 엔진 업데이트
+
+          // ✅ NPC 물리 그룹에 추가
+          this.npcs.add(npc);
+          npc.setData('isNPC', true);
         } else {
           this.add.image(x, y, 'floor').setOrigin(0);
         }
@@ -119,8 +134,8 @@ class WholeMazeScene extends Phaser.Scene {
       .setDepth(2);
 
     // ✅ 플레이어 크기를 타일 하나 크기로 조정
-    const playerWidth = tileSize * 0.9; // 약간 여유를 두어 타일보다 약간 작게 설정
-    const playerHeight = tileSize * 0.9;
+    const playerWidth = tileSize * 0.8; // 약간 여유를 두어 타일보다 약간 작게 설정
+    const playerHeight = tileSize * 0.8;
 
     // ✅ 플레이어 이미지 크기 조정
     const playerImage = this.textures.get('player').getSourceImage();
@@ -132,7 +147,6 @@ class WholeMazeScene extends Phaser.Scene {
 
     // ✅ 플레이어와 벽 사이의 충돌 설정
     this.physics.add.collider(this.player, this.walls);
-    this.physics.add.collider(this.player, this.npcs);
 
     // ✅ 키보드 입력 설정
     if (!this.input || !this.input.keyboard) {
@@ -156,9 +170,10 @@ class WholeMazeScene extends Phaser.Scene {
     // ✅ NPC와 충돌 감지 → `MeetNPC`로 이동
     this.physics.add.overlap(this.player, this.npcs, (player, npc) => {
       this.handleNPCInteraction(
-        player as Phaser.Physics.Arcade.Sprite,
-        npc as Phaser.Physics.Arcade.Sprite,
+        player as Phaser.Types.Physics.Arcade.GameObjectWithBody,
+        npc as Phaser.Types.Physics.Arcade.GameObjectWithBody,
       );
+      console.log('충돌감지!');
     });
   }
 
@@ -190,12 +205,26 @@ class WholeMazeScene extends Phaser.Scene {
     this.updateDarkness();
   }
 
-  // ✅ NPC와의 충돌 이벤트 → React `MeetNPC` 화면 이동
-  handleNPCInteraction(player: Phaser.GameObjects.GameObject, npc: Phaser.GameObjects.GameObject) {
-    void player;
-    void npc;
-    if (window.navigateToMeetNPC) {
-      window.navigateToMeetNPC(); // ✅ React Router를 통해 MeetNPC 화면으로 이동
+  // ✅ NPC와의 충돌 이벤트 → React MeetNPC 화면 이동
+  handleNPCInteraction(
+    player: Phaser.Types.Physics.Arcade.GameObjectWithBody,
+    npc: Phaser.Types.Physics.Arcade.GameObjectWithBody,
+  ) {
+    // NPC와 이미 상호작용 중인지 확인
+    if (this.isInteractingWithNPC) return;
+
+    // 실제 NPC인지 확인 (데이터 속성으로)
+    if (npc.body && npc.body.gameObject.getData('isNPC')) {
+      console.log('엔피씨다');
+      this.isInteractingWithNPC = true;
+
+      // 플레이어 멈추기
+      this.player.setVelocity(0, 0);
+
+      // React 컴포넌트로 이동
+      if (window.navigateToMeetNPC) {
+        window.navigateToMeetNPC();
+      }
     }
   }
 
