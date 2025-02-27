@@ -211,6 +211,7 @@ class WholeMazeScene extends Phaser.Scene {
     player: Phaser.Types.Physics.Arcade.GameObjectWithBody,
     npc: Phaser.Types.Physics.Arcade.GameObjectWithBody,
   ) {
+    console.log(player);
     // NPC와 이미 상호작용 중인지 확인
     if (this.isInteractingWithNPC) return;
 
