@@ -12,6 +12,25 @@ export const Background = styled.div`
   display: flex;
 `;
 
+export const Close = styled.div`
+  position: absolute;
+  top: 30px;
+  right: 80px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+`;
+
+export const XIcon = styled.img`
+  width: 40px;
+`;
+
+export const Ment = styled.p`
+  color: white;
+  font-size: 30px;
+`;
+
 export const Head = styled.div``;
 
 export const TimeOut = styled.div``;
@@ -45,10 +64,10 @@ export const TalkBox = styled.div`
 export const TextBox = styled.div`
   height: 200px;
   overflow: auto;
+  color: white;
   flex-grow: 1;
   resize: none;
   border: none;
-  background-color: transparent;
   width: 100%;
   font-size: 30px;
   letter-spacing: 5px;

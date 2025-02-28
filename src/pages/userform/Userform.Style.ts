@@ -29,10 +29,10 @@ export const Bottom = styled.div`
 
 export const myImg = styled.img`
   position: absolute;
-  height: 80%;
+  height: 60%;
   image-rendering: pixelated;
-  bottom: 50px;
-  left: 100px;
+  bottom: 100px;
+  right: 300px;
 `;
 
 export const TalkBox = styled.div`
@@ -43,11 +43,12 @@ export const TalkBox = styled.div`
   min-height: 30%;
   border-radius: 10px;
   margin: 30px;
-  width: 80%;
+  width: 70%;
   padding: 20px 50px;
   font-size: 40px;
   overflow: hidden;
   background-color: Black;
+  color: white;
 `;
 
 export const InputBox = styled.div`
@@ -57,13 +58,13 @@ export const InputBox = styled.div`
   margin: 0px 20px;
   align-items: center;
   flex: 1;
-  color: white;
 `;
 
 export const nameInput = styled.input`
   border: none;
   font-size: 35px;
   margin-top: 20px;
+  color: white;
 `;
 
 export const nextPart = styled.div`
@@ -74,7 +75,6 @@ export const nextPart = styled.div`
   gap: 15px;
   height: 100%;
   align-items: center;
-  font-color: white;
 `;
 
 export const enterImg = styled.img``;
